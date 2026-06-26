@@ -34,6 +34,9 @@ const SubjectSelectionPage = ({ onSubjectSelect }) => {
         <div className="hero-icon">🎓</div>
         <h1>What would you like to learn today?</h1>
         <p>Choose a subject and start your AI-powered learning journey</p>
+        {!loading && subjects.length > 0 && (
+          <div className="hero-stat"><strong>{subjects.length}</strong> subjects available</div>
+        )}
       </div>
       <div className="subjects-categories">
         {categories.map(cat => (

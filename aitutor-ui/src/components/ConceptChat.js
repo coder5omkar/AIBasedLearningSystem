@@ -70,10 +70,17 @@ const ConceptChat = ({ conceptId, conceptTitle, provider, model, apiKey }) => {
         )}
         {messages.map((m, i) => (
           <div key={i} className={`chat-bubble ${m.role}`}>
+            {m.role === 'assistant' && <span className="chat-avatar assistant">🤖</span>}
             <div className={`chat-bubble-content ${m.role}`}>{renderContent(m.content)}</div>
+            {m.role === 'user' && <span className="chat-avatar user">🧑</span>}
           </div>
         ))}
-        {sending && <div className="chat-bubble assistant"><div className="chat-bubble-content assistant"><span className="typing-dots">Thinking</span></div></div>}
+        {sending && (
+          <div className="chat-bubble assistant">
+            <span className="chat-avatar assistant">🤖</span>
+            <div className="chat-bubble-content assistant"><span className="typing-dots">Thinking</span></div>
+          </div>
+        )}
         <div ref={endRef} />
       </div>
       <div className="concept-chat-input">

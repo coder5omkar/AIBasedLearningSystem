@@ -30,6 +30,7 @@ public class ModelService {
             models.addAll(getOllamaModels());
         } catch (Exception e) {
             models.add(Map.of("name", "llama3.2:3b", "provider", "ollama"));
+            models.add(Map.of("name", "llama3.2:8b", "provider", "ollama"));
         }
 
         if (openAiApiKey != null && !openAiApiKey.isBlank()) {

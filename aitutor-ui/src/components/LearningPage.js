@@ -168,11 +168,21 @@ const LearningPage = ({ syllabusId, subject, provider, model, apiKey }) => {
     return <div className="learning-loading"><div className="spinner" /><p>Loading your learning journey...</p></div>;
   }
 
+  const totalConcepts = progress.reduce((s, ch) => s + (ch.totalConcepts || 0), 0);
+  const completedConcepts = progress.reduce((s, ch) => s + (ch.completedConcepts || 0), 0);
+  const overallPct = totalConcepts > 0 ? Math.round((completedConcepts / totalConcepts) * 100) : 0;
+
   return (
     <div className="learning-page">
       <aside className="syllabus-tree-panel" style={{ width: treeWidth, minWidth: 200, maxWidth: 400 }}>
         <div className="tree-panel-header">
           <h3><span className="header-subj-icon">{subject?.icon}</span> Syllabus</h3>
+          {totalConcepts > 0 && (
+            <div className="tree-progress">
+              <div className="tree-progress-bar"><div className="tree-progress-fill" style={{ width: `${overallPct}%` }} /></div>
+              <span className="tree-progress-text">{completedConcepts}/{totalConcepts} · {overallPct}%</span>
+            </div>
+          )}
         </div>
         <div className="tree-panel-content">
           {progress.length === 0 ? (
@@ -240,6 +250,7 @@ const LearningPage = ({ syllabusId, subject, provider, model, apiKey }) => {
           <div className="center-loading"><div className="spinner" /><p>Loading concept...</p></div>
         ) : (
           <div className="center-placeholder">
+            <span className="placeholder-icon">🚀</span>
             <h2>Welcome to {structure?.title || 'Learning'}</h2>
             <p>Select a concept from the syllabus to start learning.</p>
           </div>

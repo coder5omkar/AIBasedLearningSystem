@@ -45,6 +45,9 @@ public class MCQ {
     @Column(columnDefinition = "TEXT")
     private String explanation;
 
+    @Column(columnDefinition = "TEXT")
+    private String sourceSnippet;
+
     private Long userId;
 
     private Long conceptId;

@@ -120,11 +120,11 @@ const ConceptMCQPanel = ({ conceptId, provider, model, apiKey, onPass, getConcep
             {!result.passed && (
               <button className="retry-btn full" onClick={() => { setSubmitted(false); setAnswers({}); setResult(null); setMcqs([]); loadMCQs(); }}>Retry Test</button>
             )}
-            {result.passed && <p className="mcq-next-hint">Moving to next concept...</p>}
+            {result.passed && <p className="mcq-next-hint">🎉 Moving to next concept...</p>}
           </div>
         ) : (
           <>
-            <p className="mcq-desc">Answer all questions correctly to pass.</p>
+            <p className="mcq-desc">⚠️ Answer all 5 questions correctly to pass.</p>
             {mcqs.map((mcq, i) => (
               <div key={mcq.id || i} className="mcq-item">
                 <p className="mcq-question-text">Q{mcq.questionNumber}. {mcq.question}</p>

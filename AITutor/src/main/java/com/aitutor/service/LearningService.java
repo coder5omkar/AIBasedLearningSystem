@@ -119,7 +119,11 @@ public class LearningService {
     public List<MCQ> getConceptMCQs(Long conceptId, String provider, String model, String apiKey) {
         List<MCQ> existing = mcqRepository.findByConceptId(conceptId);
         if (!existing.isEmpty()) {
-            return existing;
+            boolean hasSource = existing.stream().allMatch(m -> m.getSourceSnippet() != null && !m.getSourceSnippet().isEmpty());
+            if (hasSource) {
+                return existing;
+            }
+            mcqRepository.deleteAll(existing);
         }
         return generateConceptMCQs(conceptId, provider, model, apiKey);
     }
@@ -128,23 +132,44 @@ public class LearningService {
         Concept concept = conceptRepository.findById(conceptId)
                 .orElseThrow(() -> new RuntimeException("Concept not found"));
 
-        String prompt = "Generate 5 multiple-choice questions about '" + concept.getTitle() + "'.\n"
-                + "For each question, provide 4 options (A, B, C, D) and indicate the correct answer.\n"
-                + "Each question should test understanding, not just memorization.\n\n"
-                + "Format EXACTLY like this:\n"
-                + "Q1: [Question text]\n"
-                + "A) [Option A]\n"
-                + "B) [Option B]\n"
-                + "C) [Option C]\n"
-                + "D) [Option D]\n"
-                + "Answer: [A/B/C/D]\n\n"
-                + "Q2: ... and so on for all 5 questions.";
+        String studyContent = concept.getContent();
+        String contentBasedPrompt;
+        if (studyContent != null && !studyContent.trim().isEmpty()) {
+            contentBasedPrompt = "Generate 5 multiple-choice questions based STRICTLY on the following study material.\n"
+                    + "Each question must be answerable from the material provided — do NOT test outside knowledge.\n"
+                    + "After each answer, include a \"Source:\" line with a brief verbatim or near-verbatim excerpt\n"
+                    + "from the study material that supports the correct answer.\n\n"
+                    + "--- STUDY MATERIAL ---\n"
+                    + studyContent + "\n"
+                    + "--- END OF STUDY MATERIAL ---\n\n"
+                    + "Format EXACTLY like this:\n"
+                    + "Q1: [Question text]\n"
+                    + "A) [Option A]\n"
+                    + "B) [Option B]\n"
+                    + "C) [Option C]\n"
+                    + "D) [Option D]\n"
+                    + "Answer: [A/B/C/D]\n"
+                    + "Source: [A short excerpt from the study material that supports the answer]\n\n"
+                    + "Q2: ... and so on for all 5 questions.";
+        } else {
+            contentBasedPrompt = "Generate 5 multiple-choice questions about '" + concept.getTitle() + "'.\n"
+                    + "For each question, provide 4 options (A, B, C, D) and indicate the correct answer.\n"
+                    + "Each question should test understanding, not just memorization.\n\n"
+                    + "Format EXACTLY like this:\n"
+                    + "Q1: [Question text]\n"
+                    + "A) [Option A]\n"
+                    + "B) [Option B]\n"
+                    + "C) [Option C]\n"
+                    + "D) [Option D]\n"
+                    + "Answer: [A/B/C/D]\n\n"
+                    + "Q2: ... and so on for all 5 questions.";
+        }
 
         try {
             var chatModel = chatModelFactory.createModel(provider, model, apiKey);
             List<Message> messages = List.of(
                     new SystemMessage("You are an educational assessment creator."),
-                    new UserMessage(prompt)
+                    new UserMessage(contentBasedPrompt)
             );
             Prompt p = new Prompt(messages);
             String content = chatModel.call(p).getResult().getOutput().getText();
@@ -165,6 +190,7 @@ public class LearningService {
             Map<String, String> options = new LinkedHashMap<>();
             String question = "";
             String correctAnswer = "";
+            String sourceSnippet = "";
 
             String[] lines = block.split("\n");
             for (String line : lines) {
@@ -182,6 +208,8 @@ public class LearningService {
                 } else if (line.matches("(?i)Answer:\\s*[A-Da-d].*")) {
                     correctAnswer = line.replaceFirst("(?i)Answer:\\s*", "").trim().toUpperCase();
                     if (correctAnswer.length() > 1) correctAnswer = correctAnswer.substring(0, 1);
+                } else if (line.matches("(?i)Source:.*")) {
+                    sourceSnippet = line.replaceFirst("(?i)Source:\\s*", "").trim();
                 }
             }
 
@@ -195,6 +223,7 @@ public class LearningService {
                         .optionC(options.get("C"))
                         .optionD(options.get("D"))
                         .correctAnswer(correctAnswer)
+                        .sourceSnippet(sourceSnippet)
                         .questionNumber(qNum++)
                         .createdAt(LocalDateTime.now())
                         .build();
@@ -213,6 +242,7 @@ public class LearningService {
                         .optionC("Option C")
                         .optionD("Option D")
                         .correctAnswer("A")
+                        .sourceSnippet("")
                         .questionNumber(i + 1)
                         .createdAt(LocalDateTime.now())
                         .build();
@@ -240,6 +270,7 @@ public class LearningService {
             r.put("userAnswer", userAnswer);
             r.put("correctAnswer", mcq.getCorrectAnswer());
             r.put("isCorrect", isCorrect);
+            r.put("sourceSnippet", mcq.getSourceSnippet() != null ? mcq.getSourceSnippet() : "");
             results.add(r);
         }
 
