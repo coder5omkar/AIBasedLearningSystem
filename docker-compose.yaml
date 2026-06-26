@@ -1,0 +1,70 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_KEEP_ALIVE=5m
+      - OLLAMA_NUM_PARALLEL=4
+    restart: unless-stopped
+    networks:
+      - aitutor-network
+    # ⭐ ADD THIS FOR GPU ⭐
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  spring-boot-app:
+    build:
+      context: ./AITutor
+      dockerfile: Dockerfile
+    container_name: spring-boot-app
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_DEFAULT_MODEL=mistral-small3.2:latest 
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - SPRING_DATASOURCE_URL=jdbc:h2:file:/data/chatdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_PASSWORD=
+    volumes:
+      - h2_data:/data
+    depends_on:
+      ollama:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - aitutor-network
+
+  react-app:
+    build:
+      context: ./aitutor-ui
+      dockerfile: Dockerfile
+    container_name: react-app
+    ports:
+      - "3000:80"
+    depends_on:
+      - spring-boot-app
+    restart: unless-stopped
+    networks:
+      - aitutor-network
+
+volumes:
+  ollama_data:
+    driver: local
+  h2_data:
+    driver: local
+
+networks:
+  aitutor-network:
+    driver: bridge
