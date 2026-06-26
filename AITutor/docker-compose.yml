@@ -1,0 +1,61 @@
+services:
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: aitutor-ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list > /dev/null 2>&1 || exit 1"]
+      interval: 10s
+      retries: 20
+      start_period: 40s
+    networks:
+      - aitutor
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aitutor-backend
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_AI_OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_MODEL=llama3.2:3b
+    ports:
+      - "8080:8080"
+    volumes:
+      - app_data:/data
+    networks:
+      - aitutor
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ../aitutor-ui
+      dockerfile: Dockerfile
+    container_name: aitutor-frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+    networks:
+      - aitutor
+    restart: unless-stopped
+
+volumes:
+  ollama_data:
+  app_data:
+
+networks:
+  aitutor:
+    driver: bridge

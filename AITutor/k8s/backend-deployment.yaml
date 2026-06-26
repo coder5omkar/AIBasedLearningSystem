@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aitutor-backend
+  namespace: aitutor
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: aitutor-backend
+  template:
+    metadata:
+      labels:
+        app: aitutor-backend
+    spec:
+      containers:
+        - name: backend
+          image: aitutor-backend:v3
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "docker"
+            - name: SPRING_AI_OLLAMA_BASE_URL
+              value: "http://host.docker.internal:11434"
+            - name: OLLAMA_HOST
+              value: "http://host.docker.internal:11434"
+            - name: OLLAMA_MODEL
+              value: "llama3.2:3b"
+          volumeMounts:
+            - name: app-data
+              mountPath: /data
+          livenessProbe:
+            httpGet:
+              path: /api/subjects
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /api/subjects
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: app-data
+          persistentVolumeClaim:
+            claimName: backend-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backend-pvc
+  namespace: aitutor
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aitutor-backend
+  namespace: aitutor
+spec:
+  selector:
+    app: aitutor-backend
+  ports:
+    - port: 8080
+      targetPort: 8080

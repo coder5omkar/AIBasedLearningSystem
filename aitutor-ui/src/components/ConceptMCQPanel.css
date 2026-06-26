@@ -1,0 +1,234 @@
+.mcq-panel,
+.mcq-panel-empty,
+.mcq-panel-completed {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.mcq-panel-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.mcq-panel-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a2332;
+}
+
+.mcq-progress {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4f6ef7;
+  background: #eef3ff;
+  padding: 2px 10px;
+  border-radius: 10px;
+}
+
+.mcq-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.mcq-loading,
+.mcq-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 12px;
+  color: #94a3b8;
+}
+
+.mcq-placeholder {
+  color: #94a3b8;
+  font-size: 13px;
+  text-align: center;
+  padding: 30px;
+}
+
+.mcq-desc {
+  font-size: 12px;
+  color: #dc2626;
+  font-weight: 500;
+  margin-bottom: 14px;
+}
+
+.mcq-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.mcq-question-text {
+  font-weight: 600;
+  font-size: 13px;
+  color: #1a2332;
+  margin-bottom: 8px;
+}
+
+.mcq-options {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mcq-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 12px;
+}
+
+.mcq-option:hover {
+  background: #f8fafc;
+}
+
+.mcq-option.selected {
+  border-color: #4f6ef7;
+  background: #eef3ff;
+}
+
+.mcq-opt-letter {
+  font-weight: 700;
+  color: #4f6ef7;
+  min-width: 18px;
+  font-size: 12px;
+}
+
+.submit-btn {
+  width: 100%;
+  background: #4f6ef7;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: all 0.2s ease;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #3b5de7;
+}
+
+.submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Result */
+.mcq-result {
+  text-align: center;
+}
+
+.mcq-result-banner {
+  font-size: 20px;
+  font-weight: 700;
+  padding: 16px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.mcq-result-banner.passed {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.mcq-result-banner.failed {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.mcq-score {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a2332;
+  margin-bottom: 4px;
+}
+
+.mcq-attempts {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 16px;
+}
+
+.mcq-result-details {
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+.mcq-result-item {
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+.mcq-result-item.correct {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+
+.mcq-result-item.wrong {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.mcq-result-q {
+  font-weight: 600;
+  margin-bottom: 2px;
+  color: #1a2332;
+}
+
+.mcq-result-answer {
+  color: #64748b;
+}
+
+.retry-btn {
+  background: #dc2626;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.retry-btn.full {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.mcq-next-hint {
+  color: #16a34a;
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 12px;
+}
+
+.mcq-completed-msg {
+  text-align: center;
+  padding: 30px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #16a34a;
+}

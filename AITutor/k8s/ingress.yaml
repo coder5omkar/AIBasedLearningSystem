@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aitutor-ingress
+  namespace: aitutor
+  annotations: {}
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: aitutor.local
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: aitutor-backend
+                port:
+                  number: 8080
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: aitutor-frontend
+                port:
+                  number: 80

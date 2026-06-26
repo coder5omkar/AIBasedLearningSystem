@@ -1,0 +1,13 @@
+.git
+.gitignore
+README.md
+target/
+.mvn/
+.mvnw
+.mvnw.cmd
+*.log
+*.tmp
+*.pid
+*.seed
+*.pid.lock
+.DS_Store
