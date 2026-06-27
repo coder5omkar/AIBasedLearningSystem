@@ -57,6 +57,36 @@ public class LearningController {
         }
     }
 
+    @GetMapping("/mcq-attempts/{conceptId}")
+    public ResponseEntity<?> getMCQAttempts(@PathVariable Long conceptId, Authentication auth) {
+        try {
+            Long userId = getUserId(auth);
+            return ResponseEntity.ok(learningService.getMCQAttemptsByConcept(userId, conceptId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/mcq-attempts/subject/{subjectId}")
+    public ResponseEntity<?> getMCQAttemptsBySubject(@PathVariable Long subjectId, Authentication auth) {
+        try {
+            Long userId = getUserId(auth);
+            return ResponseEntity.ok(learningService.getMCQAttemptsBySubject(userId, subjectId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/progress/subject/{subjectId}")
+    public ResponseEntity<?> getProgressBySubject(@PathVariable Long subjectId, Authentication auth) {
+        try {
+            Long userId = getUserId(auth);
+            return ResponseEntity.ok(learningService.getProgressBySubject(userId, subjectId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     private Long getUserId(Authentication auth) {
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
         return userService.getUserIdByUsername(userDetails.getUsername());

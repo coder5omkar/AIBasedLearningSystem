@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "user_progress")
-public class UserProgress {
+@Table(name = "mcq_attempts")
+public class MCQAttempt {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,23 +28,26 @@ public class UserProgress {
 
     private Long subjectId;
 
-    @Column(nullable = false, length = 20)
-    private String status;
+    private Long mcqId;
 
     @Column(nullable = false)
-    private Integer mcqAttempts;
+    private Integer attemptNumber;
 
     @Column(nullable = false)
-    private Integer mcqCorrect;
+    private Integer questionNumber;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String question;
+
+    @Column(length = 5)
+    private String userAnswer;
+
+    @Column(nullable = false, length = 5)
+    private String correctAnswer;
 
     @Column(nullable = false)
-    private Integer totalMcqQuestions;
+    private Boolean isCorrect;
 
     @Column(nullable = false)
-    private Boolean mcqPassed;
-
-    private LocalDateTime completedAt;
-
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
+    private LocalDateTime attemptedAt;
 }

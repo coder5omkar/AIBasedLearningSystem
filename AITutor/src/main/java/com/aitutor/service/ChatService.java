@@ -21,14 +21,17 @@ public class ChatService {
     private final MemoryService memoryService;
     private final SystemPromptService systemPromptService;
     private final ConceptRepository conceptRepository;
+    private final LearningService learningService;
 
     @Autowired
     public ChatService(ChatModelFactory chatModelFactory, MemoryService memoryService,
-                       SystemPromptService systemPromptService, ConceptRepository conceptRepository) {
+                       SystemPromptService systemPromptService, ConceptRepository conceptRepository,
+                       LearningService learningService) {
         this.chatModelFactory = chatModelFactory;
         this.memoryService = memoryService;
         this.systemPromptService = systemPromptService;
         this.conceptRepository = conceptRepository;
+        this.learningService = learningService;
     }
 
     public String chat(Long userId, String sessionId, String userMessage, String provider, String model, String apiKey) {
@@ -96,10 +99,11 @@ public class ChatService {
         Prompt prompt = new Prompt(allMessages);
         String response = chatModel.call(prompt).getResult().getOutput().getText();
 
+        Long subjectId = learningService.resolveSubjectId(conceptId);
         memoryService.addMessages(userId, sessionId, List.of(
                 new UserMessage(question),
                 new AssistantMessage(response)
-        ));
+        ), subjectId);
 
         return response;
     }

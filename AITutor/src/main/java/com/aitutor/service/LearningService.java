@@ -23,6 +23,7 @@ public class LearningService {
     private final SyllabusRepository syllabusRepository;
     private final ChatModelFactory chatModelFactory;
     private final MCQRepository mcqRepository;
+    private final MCQAttemptRepository mcqAttemptRepository;
 
     public LearningService(ConceptRepository conceptRepository,
                            UserProgressRepository userProgressRepository,
@@ -30,7 +31,8 @@ public class LearningService {
                            SectionRepository sectionRepository,
                            SyllabusRepository syllabusRepository,
                            ChatModelFactory chatModelFactory,
-                           MCQRepository mcqRepository) {
+                           MCQRepository mcqRepository,
+                           MCQAttemptRepository mcqAttemptRepository) {
         this.conceptRepository = conceptRepository;
         this.userProgressRepository = userProgressRepository;
         this.chapterRepository = chapterRepository;
@@ -38,6 +40,7 @@ public class LearningService {
         this.syllabusRepository = syllabusRepository;
         this.chatModelFactory = chatModelFactory;
         this.mcqRepository = mcqRepository;
+        this.mcqAttemptRepository = mcqAttemptRepository;
     }
 
     public List<Map<String, Object>> getProgress(Long userId, Long syllabusId) {
@@ -258,11 +261,34 @@ public class LearningService {
         int correct = 0;
         int total = mcqs.size();
 
+        Long subjectId = resolveSubjectId(conceptId);
+
+        int currentAttemptNumber = 1;
+        Integer maxAttempt = mcqAttemptRepository.findMaxAttemptNumberByUserIdAndConceptId(userId, conceptId);
+        if (maxAttempt != null) {
+            currentAttemptNumber = maxAttempt + 1;
+        }
+
         List<Map<String, Object>> results = new ArrayList<>();
         for (MCQ mcq : mcqs) {
             String userAnswer = answers.get(mcq.getQuestionNumber());
             boolean isCorrect = userAnswer != null && userAnswer.equalsIgnoreCase(mcq.getCorrectAnswer());
             if (isCorrect) correct++;
+
+            MCQAttempt attempt = MCQAttempt.builder()
+                    .userId(userId)
+                    .conceptId(conceptId)
+                    .subjectId(subjectId)
+                    .mcqId(mcq.getId())
+                    .attemptNumber(currentAttemptNumber)
+                    .questionNumber(mcq.getQuestionNumber())
+                    .question(mcq.getQuestion())
+                    .userAnswer(userAnswer)
+                    .correctAnswer(mcq.getCorrectAnswer())
+                    .isCorrect(isCorrect)
+                    .attemptedAt(LocalDateTime.now())
+                    .build();
+            mcqAttemptRepository.save(attempt);
 
             Map<String, Object> r = new HashMap<>();
             r.put("questionNumber", mcq.getQuestionNumber());
@@ -270,7 +296,6 @@ public class LearningService {
             r.put("userAnswer", userAnswer);
             r.put("correctAnswer", mcq.getCorrectAnswer());
             r.put("isCorrect", isCorrect);
-            r.put("sourceSnippet", mcq.getSourceSnippet() != null ? mcq.getSourceSnippet() : "");
             results.add(r);
         }
 
@@ -279,6 +304,7 @@ public class LearningService {
                 .orElse(UserProgress.builder()
                         .userId(userId)
                         .conceptId(conceptId)
+                        .subjectId(subjectId)
                         .status("in_progress")
                         .mcqAttempts(0)
                         .mcqCorrect(0)
@@ -287,6 +313,7 @@ public class LearningService {
                         .updatedAt(LocalDateTime.now())
                         .build());
 
+        progress.setSubjectId(subjectId);
         progress.setMcqAttempts(progress.getMcqAttempts() + 1);
         progress.setMcqCorrect(correct);
         progress.setMcqPassed(correct == total);
@@ -306,5 +333,33 @@ public class LearningService {
         result.put("attempts", progress.getMcqAttempts());
         result.put("results", results);
         return result;
+    }
+
+    public Long resolveSubjectId(Long conceptId) {
+        try {
+            Concept concept = conceptRepository.findById(conceptId).orElse(null);
+            if (concept == null) return null;
+            Section section = sectionRepository.findById(concept.getSectionId()).orElse(null);
+            if (section == null) return null;
+            Chapter chapter = chapterRepository.findById(section.getChapterId()).orElse(null);
+            if (chapter == null) return null;
+            Syllabus syllabus = syllabusRepository.findById(chapter.getSyllabusId()).orElse(null);
+            if (syllabus == null) return null;
+            return syllabus.getSubjectId();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public List<MCQAttempt> getMCQAttemptsByConcept(Long userId, Long conceptId) {
+        return mcqAttemptRepository.findByUserIdAndConceptIdOrderByAttemptedAtDesc(userId, conceptId);
+    }
+
+    public List<MCQAttempt> getMCQAttemptsBySubject(Long userId, Long subjectId) {
+        return mcqAttemptRepository.findByUserIdAndSubjectIdOrderByAttemptedAtDesc(userId, subjectId);
+    }
+
+    public List<UserProgress> getProgressBySubject(Long userId, Long subjectId) {
+        return userProgressRepository.findByUserIdAndSubjectId(userId, subjectId);
     }
 }

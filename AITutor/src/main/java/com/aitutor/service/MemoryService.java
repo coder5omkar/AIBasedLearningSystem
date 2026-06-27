@@ -23,6 +23,10 @@ public class MemoryService {
     }
 
     public void addMessages(Long userId, String sessionId, List<Message> messages) {
+        addMessages(userId, sessionId, messages, null);
+    }
+
+    public void addMessages(Long userId, String sessionId, List<Message> messages, Long subjectId) {
         messages.forEach(msg -> {
             if (msg instanceof SystemMessage) {
                 return;
@@ -30,6 +34,7 @@ public class MemoryService {
             ChatMessageEntity entity = ChatMessageEntity.builder()
                     .sessionId(sessionId)
                     .userId(userId)
+                    .subjectId(subjectId)
                     .role(msg.getMessageType().name().toLowerCase())
                     .content(msg.getText())
                     .timestamp(LocalDateTime.now())
@@ -72,6 +77,10 @@ public class MemoryService {
 
     public List<String> getAllSessions(Long userId) {
         return repository.findDistinctSessionIdsByUserId(userId);
+    }
+
+    public List<ChatMessageEntity> getMessagesBySubject(Long userId, Long subjectId) {
+        return repository.findByUserIdAndSubjectIdOrderByTimestampAsc(userId, subjectId);
     }
 
     public void clear(Long userId, String sessionId) {

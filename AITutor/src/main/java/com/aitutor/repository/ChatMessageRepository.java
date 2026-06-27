@@ -14,6 +14,8 @@ import java.util.List;
 public interface ChatMessageRepository extends JpaRepository<ChatMessageEntity, Long> {
     List<ChatMessageEntity> findByUserIdAndSessionIdOrderByTimestampAsc(Long userId, String sessionId);
 
+    List<ChatMessageEntity> findByUserIdAndSubjectIdOrderByTimestampAsc(Long userId, Long subjectId);
+
     @Query("SELECT DISTINCT c.sessionId FROM ChatMessageEntity c WHERE c.userId = :userId")
     List<String> findDistinctSessionIdsByUserId(@Param("userId") Long userId);
 

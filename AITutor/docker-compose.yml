@@ -28,13 +28,12 @@ services:
         condition: service_healthy
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3306/aitutor?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       - SPRING_AI_OLLAMA_BASE_URL=http://ollama:11434
       - OLLAMA_HOST=http://ollama:11434
       - OLLAMA_MODEL=llama3.2:3b
     ports:
       - "8080:8080"
-    volumes:
-      - app_data:/data
     networks:
       - aitutor
     restart: unless-stopped
@@ -54,7 +53,6 @@ services:
 
 volumes:
   ollama_data:
-  app_data:
 
 networks:
   aitutor:

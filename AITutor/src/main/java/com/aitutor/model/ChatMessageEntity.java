@@ -32,6 +32,8 @@ public class ChatMessageEntity {
 
     private Long userId;
 
+    private Long subjectId;
+
     @Column(nullable = false)
     private LocalDateTime timestamp;
 }

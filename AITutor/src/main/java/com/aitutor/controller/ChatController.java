@@ -10,8 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-
 import java.util.List;
 import java.util.Map;
 
@@ -65,6 +63,16 @@ public class ChatController {
     public List<Message> history(@RequestParam String sessionId, Authentication auth) {
         Long userId = userService.getUserIdByUsername(auth.getName());
         return chatService.getHistory(userId, sessionId);
+    }
+
+    @GetMapping("/subject/{subjectId}")
+    public ResponseEntity<?> getChatBySubject(@PathVariable Long subjectId, Authentication auth) {
+        try {
+            Long userId = userService.getUserIdByUsername(auth.getName());
+            return ResponseEntity.ok(memoryService.getMessagesBySubject(userId, subjectId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     @GetMapping("/sessions")
